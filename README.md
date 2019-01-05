@@ -1,23 +1,51 @@
 <h1>djongo</h1>
+<h2>Attention !</h2>
+Attention ! This is a fork from popular original djongo at <a href="https://github.com/nesdis/djongo">djongo</a> before the license is switched to AFL. I forked it for my own purpose to develop a solution for my client, please support the original djongo project if you found that my fork is useful.
+
+I have done a hard reset to the commit 4a8a0eef7c4aa66ca83b46de04a12bda99a6ec47 which is the last commit before the license switched from BSD3 to AFL.
+
+
+<pre>
+<code>
+super@super-Inspiron-7380:~/Code/vaim/djongo$ git reset --hard 4a8a0eef7c4aa66ca83b46de04a12bda99a6ec47
+HEAD is now at 4a8a0ee updated docs
+super@super-Inspiron-7380:~/Code/vaim/djongo$ git push origin HEAD --force
+Username for 'https://github.com': vaimdev
+Password for 'https://vaimdev@github.com':
+remote: Invalid username or password.
+fatal: Authentication failed for 'https://github.com/vaimdev/djongo/'
+super@super-Inspiron-7380:~/Code/vaim/djongo$ git push origin HEAD --force
+Username for 'https://github.com': vaimdev
+Password for 'https://vaimdev@github.com':
+Total 0 (delta 0), reused 0 (delta 0)
+To https://github.com/vaimdev/djongo
+ + cc6c7d6...4a8a0ee HEAD -> master (forced update)
+</code>
+</pre>
+
+<br />
+
+Below is the original README.md
+
 
 <a href="https://opensource.org/licenses/BSD-3-Clause"><img src="https://img.shields.io/badge/License-BSD%203--Clause-blue.svg" alt="BSD3" height="18"></a>
 <a href="https://badge.fury.io/py/djongo"><img src="https://badge.fury.io/py/djongo.svg" alt="PyPI version" height="18"></a>
 
 <h2>Driver for allowing Django to use MongoDB as the database backend</h2>
 
-Use MongoDB as a backend database for your Django project, without changing the Django ORM. Use the Django Admin GUI to add and modify documents in MongoDB. 
+Use MongoDB as a backend database for your Django project, without changing the Django ORM. Use the Django Admin GUI to add and modify documents in MongoDB.
 
 ## Usage:
 <ol>
 <li> Install djongo:
 
-``` 
+```
 pip install djongo
 ```
 </li>
-<li> Into settings.py file of your project, add: 
+<li> Into settings.py file of your project, add:
 
-``` 
+```
 DATABASES = {
     'default': {
         'ENGINE': 'djongo',
@@ -35,7 +63,7 @@ DATABASES = {
   1. Python 3.6 or higher.
   2. MongoDB 3.4 or higher.
   3. If your models use nested queries or sub querysets like:
-  
+
       ```python
       inner_qs = Blog.objects.filter(name__contains='Ch').values('name')
       entries = Entry.objects.filter(blog__name__in=inner_qs)
@@ -49,8 +77,8 @@ I am inundated daily with your love, appreciation, queries and feature requests 
 ## How it works
 
 djongo is a SQL to mongodb query compiler. It translates a SQL query string into a mongoDB query document. As a result, all Django features, models etc work as is.
-  
-  Django contrib modules: 
+
+  Django contrib modules:
 <pre><code>  
 'django.contrib.admin',
 'django.contrib.auth',    
@@ -65,20 +93,19 @@ djongo is a SQL to mongodb query compiler. It translates a SQL query string into
   * Embedded Model.
   * Embedded Array.
   * Embedded Form Fields.
-  
+
   Read the [full documentation](https://nesdis.github.io/djongo/)
-  
+
 ## Contribute
- 
+
  If you think djongo is useful, **please share it** with the world! Your endorsements and online reviews will help get more support for this project.
-  
+
  Take a look at the [Enhancements project](https://github.com/nesdis/djongo/projects/1) that contains a list of features that must be implemented in future versions of Djongo. You can contribute to the source code or the documentation by creating a simple pull request! You may want to refer to the design documentation to get an idea on how [Django MongoDB connector](https://nesdis.github.io/djongo/django-mongodb-connector-design-document/) is implemented.
- 
- Add a star, show some love :) 
+
+ Add a star, show some love :)
 
 ## Questions and Discussion
 
  * [Djongo groups](https://groups.google.com/d/forum/djongo) is where you can watch for new release announcements, suggest improvements, and discuss topics pertaining to Django and MongoDB.
- * Issues, where things are not working as expected, please raise a git-hub issue ticket. 
- * For questions and clarifications regarding usage, please put it up on stackoverflow instead. 
-   
+ * Issues, where things are not working as expected, please raise a git-hub issue ticket.
+ * For questions and clarifications regarding usage, please put it up on stackoverflow instead.
