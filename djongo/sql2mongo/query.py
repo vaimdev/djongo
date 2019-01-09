@@ -128,7 +128,7 @@ class SelectQuery(Query):
 
             elif tok.match(tokens.Keyword, 'ORDER'):
                 c = self.order = OrderConverter(self, tok_id)
-            
+
             elif tok.match(tokens.Keyword, 'OFFSET'):
                 c = self.offset = OffsetConverter(self, tok_id)
 
@@ -264,7 +264,7 @@ class SelectQuery(Query):
 
             if self.order:
                 kwargs.update(self.order.to_mongo())
-            
+
             if self.offset:
                 kwargs.update(self.offset.to_mongo())
 
@@ -555,18 +555,24 @@ class AlterQuery(VoidQuery):
 
         while tok_id is not None:
             if tok.match(tokens.Keyword, (
-                    'COLUMN', 'CASCADE'
+                'CASCADE'
             )):
                 pass
             elif isinstance(tok, Identifier):
                 self._iden_name = tok.get_name()
+            elif tok.match(tokens.Keyword, 'CONSTRAINT'):
+                self.execute = self._drop_constraint
+            elif tok.match(tokens.Keyword, 'COLUMN'):
+                self.execute = self._drop_column
             else:
                 raise NotImplementedError
 
             tok_id, tok = sm.token_next(tok_id)
 
-        self.execute = self._drop_column
         return tok_id
+
+    def _drop_constraint(self):
+        self.db_ref[self.left_table].drop_index(self._iden_name)
 
     def _drop_column(self):
         self.db_ref[self.left_table].update(
@@ -724,7 +730,7 @@ class Result:
         except OperationFailure as e:
             import djongo
             exe = SQLDecodeError(
-                f'FAILED SQL: {self._sql}\n' 
+                f'FAILED SQL: {self._sql}\n'
                 f'Pymongo error: {e.details}\n'
                 f'Version: {djongo.__version__}'
             )
@@ -901,5 +907,3 @@ class Result:
     }
 
 # TODO: Need to do this
-
-
