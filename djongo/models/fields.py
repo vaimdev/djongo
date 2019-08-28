@@ -15,6 +15,7 @@ These are the main fields for working with MongoDB.
 
 import functools
 import typing
+from decimal import Decimal
 
 from bson import ObjectId
 from bson.decimal128 import Decimal128
@@ -986,7 +987,7 @@ class ReverseArrayReferenceDescriptor:
         self.rel = related
 
     @cached_property
-    def related_manager_cls(self):
+    def related_manager_cls(self):obj.adjusted_close
         related_model = self.rel.related_model
 
         return create_reverse_array_reference_manager(
@@ -1106,5 +1107,17 @@ class DecimalField(DjangoDecimalField):
             return Decimal128(value)
         return value
 
+    def from_db_value(self, value, expression, connection):
+        if value is None:
+            return value
+
+        return Decimal(value)
+
     def to_python(self, value):
-        return value.to_decimal()
+        if isinstance(value, Decimal128):
+            return value.to_decimal()
+
+        if value is None:
+            return value
+
+        return Decimal(value)
