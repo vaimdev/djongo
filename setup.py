@@ -82,15 +82,16 @@ def find_version(*file_paths):
 setup(
     name='djongo',
     version=find_version("djongo", "__init__.py"),
+    include_package_data=True,
     packages=packages,
     url='https://nesdis.github.io/djongo/',
-    license='BSD',
+    license='AGPL',
     author='nesdis',
     author_email='nesdis@gmail.com',
     description=(
         'Driver for allowing Django to use MongoDB as the database backend.'),
     install_requires=[
-        'sqlparse>=0.2.3',
+        'sqlparse==0.2.4',
         'pymongo>=3.2.0',
         'django>=2.0',
         'dataclasses>=0.1',
