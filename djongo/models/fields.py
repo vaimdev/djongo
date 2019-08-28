@@ -1105,3 +1105,6 @@ class DecimalField(DjangoDecimalField):
         if value is not None:
             return Decimal128(value)
         return value
+
+    def to_python(self, value):
+        return value.to_decimal()
