@@ -128,7 +128,7 @@ class SelectQuery(Query):
 
             elif tok.match(tokens.Keyword, 'ORDER'):
                 c = self.order = OrderConverter(self, tok_id)
-
+            
             elif tok.match(tokens.Keyword, 'OFFSET'):
                 c = self.offset = OffsetConverter(self, tok_id)
 
@@ -264,7 +264,7 @@ class SelectQuery(Query):
 
             if self.order:
                 kwargs.update(self.order.to_mongo())
-
+            
             if self.offset:
                 kwargs.update(self.offset.to_mongo())
 
@@ -508,6 +508,9 @@ class AlterQuery(VoidQuery):
 
     def __init__(self, *args):
         self._iden_name = None
+        self._old_name = None
+        self._new_name = None
+        self._new_name = None
         self._default = None
         self._cascade = None
         self._null = None
@@ -530,10 +533,53 @@ class AlterQuery(VoidQuery):
                 tok_id = self._drop(tok_id)
             elif tok.match(tokens.Keyword.DDL, 'ALTER'):
                 tok_id = self._alter(tok_id)
+            elif tok.match(tokens.Keyword, 'RENAME'):
+                tok_id = self._rename(tok_id)
             else:
                 raise NotImplementedError
 
             tok_id, tok = sm.token_next(tok_id)
+
+    def _rename(self, tok_id):
+        sm = self.statement
+        tok_id, tok = sm.token_next(tok_id)
+
+        column = False
+        to = False
+        while tok_id is not None:
+            if tok.match(tokens.Keyword, ('COLUMN'),):
+                self.execute = self._rename_column
+                column = True
+
+            if tok.match(tokens.Keyword, ('TO'),):
+                to = True
+            elif isinstance(tok, Identifier):
+                if not to:
+                    self._old_name = tok.get_real_name()
+                else:
+                    self._new_name = tok.get_real_name()
+
+            tok_id, tok = sm.token_next(tok_id)
+
+        if not column:
+            # Rename table
+            self.execute = self._rename_collection
+
+        return tok_id
+
+    def _rename_column(self):
+        self.db_ref[self.left_table].update(
+            {},
+            {
+                '$rename': {
+                    self._old_name: self._new_name
+                }
+            },
+            multi=True
+        )
+
+    def _rename_collection(self):
+        self.db_ref[self.left_table].rename(self._new_name)
 
     def _alter(self, tok_id):
         self.execute = lambda: None
@@ -559,7 +605,7 @@ class AlterQuery(VoidQuery):
             )):
                 pass
             elif isinstance(tok, Identifier):
-                self._iden_name = tok.get_name()
+                self._iden_name = tok.get_real_name()
             elif tok.match(tokens.Keyword, 'CONSTRAINT'):
                 self.execute = self._drop_constraint
             elif tok.match(tokens.Keyword, 'COLUMN'):
@@ -581,7 +627,8 @@ class AlterQuery(VoidQuery):
                 '$unset': {
                     self._iden_name: ''
                 }
-            }
+            },
+            multi=True
         )
 
     def _add(self, tok_id):
@@ -595,12 +642,12 @@ class AlterQuery(VoidQuery):
             )):
                 pass
             elif tok.match(tokens.Name.Builtin, (
-                'integer', 'bool', 'char', 'date',
-                'datetime', 'float', 'time'
+                'integer', 'bool', 'char', 'date', 'boolean',
+                'datetime', 'float', 'time', 'number'
             )):
                 pass
             elif isinstance(tok, Identifier):
-                self._iden_name = tok.get_name()
+                self._iden_name = tok.get_real_name()
             elif isinstance(tok, Parenthesis):
                 self.field_dir = [
                     (field.strip(' "'), 1)
@@ -637,7 +684,8 @@ class AlterQuery(VoidQuery):
                 '$set': {
                     self._iden_name: self._default
                 }
-            }
+            },
+            multi=True
         )
     def _index(self):
         self.db_ref[self.left_table].create_index(
@@ -730,7 +778,8 @@ class Result:
         except OperationFailure as e:
             import djongo
             exe = SQLDecodeError(
-                f'FAILED SQL: {self._sql}\n'
+                f'FAILED SQL: {self._sql}\n' 
+                f'Params: {self._params}\n'
                 f'Pymongo error: {e.details}\n'
                 f'Version: {djongo.__version__}'
             )
@@ -740,6 +789,7 @@ class Result:
             import djongo
             exe = SQLDecodeError(
                 f'FAILED SQL: {self._sql}\n'
+                f'Params: {self._params}\n'
                 f'Version: {djongo.__version__}'
             )
             raise exe from e
@@ -775,6 +825,7 @@ class Result:
                 import djongo
                 exe = SQLDecodeError(
                     f'FAILED SQL: {self._sql}\n'
+                    f'Params: {self._params}\n'
                     f'Pymongo error: {e.details}\n'
                     f'Version: {djongo.__version__}'
                 )
@@ -784,6 +835,7 @@ class Result:
                 import djongo
                 exe = SQLDecodeError(
                     f'FAILED SQL: {self._sql}\n'
+                    f'Params: {self._params}\n'
                     f'Version: {djongo.__version__}'
                 )
                 raise exe from e
@@ -907,3 +959,5 @@ class Result:
     }
 
 # TODO: Need to do this
+
+

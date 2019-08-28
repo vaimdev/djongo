@@ -82,6 +82,7 @@ class SQLFunc:
         else:
             raise SQLDecodeError
 
+
 class SQLToken:
 
     def __init__(self, token: Token, alias2op=None):
