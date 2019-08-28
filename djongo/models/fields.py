@@ -17,13 +17,15 @@ import functools
 import typing
 
 from bson import ObjectId
+from bson.decimal128 import Decimal128
 from django import forms
 from django.core.exceptions import ValidationError
 from django.db import connections as pymongo_connections
 from django.db import router, connections, transaction
 from django.db.models import (
     Manager, Model, Field, AutoField,
-    ForeignKey, BigAutoField, ManyToManyField, CASCADE
+    ForeignKey, BigAutoField, ManyToManyField, CASCADE,
+    DecimalField as DjangoDecimalField
 )
 from django.forms import modelform_factory
 from django.utils.functional import cached_property
@@ -1091,3 +1093,15 @@ class ArrayReferenceField(ForeignKey):
                 initial = initial()
             defaults['initial'] = [i.pk for i in initial]
         return super().formfield(**defaults)
+
+
+class DecimalField(DjangoDecimalField):
+    """
+    Custom DecimalField as the saving of DecimalField in EmbeddedModelField will throw Exception
+    """
+
+    def get_db_prep_value(self, value, connection=None, prepared=False):
+        value = super().get_db_prep_value(value, connection, prepared)
+        if value is not None:
+            return Decimal128(value)
+        return value
