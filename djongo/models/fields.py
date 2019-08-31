@@ -987,7 +987,7 @@ class ReverseArrayReferenceDescriptor:
         self.rel = related
 
     @cached_property
-    def related_manager_cls(self):obj.adjusted_close
+    def related_manager_cls(self):
         related_model = self.rel.related_model
 
         return create_reverse_array_reference_manager(
